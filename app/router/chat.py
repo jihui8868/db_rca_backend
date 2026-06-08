@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.agents import agent_service
 from app.core.database import get_db
+from app.core.utils import build_connection_string
 from app.crud import chat_message as crud_message
 from app.crud import session as crud_session
 from app.schemas.chat import ChatRequest, ChatResponse
@@ -24,8 +25,16 @@ def send_message(session_id: str, body: ChatRequest, db: Session = Depends(get_d
     is_first = len(existing_messages) <= 1
 
     db_diagnostics = None
-    if is_first and session.db_connection_string:
-        adapter = get_adapter(session.db_type, session.db_connection_string)
+    if is_first and session.data_source:
+        connection_string = build_connection_string(
+            db_type=session.data_source.db_type,
+            host=session.data_source.host,
+            port=session.data_source.port,
+            username=session.data_source.username,
+            password=session.data_source.password,
+            database_name=session.data_source.database_name,
+        )
+        adapter = get_adapter(session.data_source.db_type, connection_string)
         if adapter and adapter.test_connection():
             db_diagnostics = adapter.get_diagnostics_summary()
 

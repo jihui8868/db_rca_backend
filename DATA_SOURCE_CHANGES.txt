@@ -1,0 +1,187 @@
+================================================================================
+                  数据源管理系统 - 改动总结
+================================================================================
+
+✅ 已完成的改动：
+
+1. 新增 DataSource 模型
+   ✓ app/models/data_source.py
+   ├── 字段：id(UUID7), name, db_type, connection_string, description, is_active
+   ├── 关系：与 ChatSession 一对多
+   └── 表名：data_sources
+
+2. 更新 ChatSession 模型
+   ✓ app/models/chat_session.py
+   ├── 添加 data_source_id 外键
+   ├── 删除 db_type 和 db_connection_string 字段
+   ├── 删除 db_type 默认值
+   └── 添加 data_source 关系
+
+3. 数据库关系更新
+   ✓ app/models/__init__.py - 导入 DataSource
+   ✓ 关系链：User → ChatSession → DataSource
+   ✓ ChatSession → ChatMessage
+   ✓ ChatSession → AnalysisReport
+
+4. API Schemas
+   ✓ app/schemas/data_source.py - DataSource API schemas
+   ├── DataSourceCreate - 创建请求
+   ├── DataSourceUpdate - 更新请求
+   ├── DataSourceResponse - 响应
+   └── DataSourceListResponse - 列表响应
+
+   ✓ app/schemas/session.py - 更新 Session schemas
+   ├── SessionCreate 现在需要 user_id + data_source_id
+   └── SessionResponse 返回 data_source_id
+
+5. CRUD 操作
+   ✓ app/crud/data_source.py - DataSource CRUD
+   ├── create_data_source()
+   ├── get_data_source()
+   ├── list_data_sources()
+   ├── update_data_source()
+   └── delete_data_source()
+
+   ✓ app/crud/session.py - 更新
+   └── create_session() 使用 data_source_id 参数
+
+6. API 路由
+   ✓ app/router/data_sources.py - 数据源管理 API
+   ├── POST /api/data-sources - 创建
+   ├── GET /api/data-sources - 列表
+   ├── GET /api/data-sources/{id} - 详情
+   ├── PUT /api/data-sources/{id} - 更新
+   └── DELETE /api/data-sources/{id} - 删除
+
+7. 应用集成
+   ✓ main.py - 注册 data_sources 路由
+   ✓ app/router/chat.py - 从 data_source 获取连接信息
+
+8. 文档
+   ✓ DATA_SOURCE_MANAGEMENT.md - 完整说明
+   ✓ DATA_SOURCE_CHANGES.txt - 本文件
+
+================================================================================
+                          快速开始
+================================================================================
+
+1. 创建数据源：
+   POST /api/data-sources
+   {
+     "name": "生产MySQL库",
+     "db_type": "mysql",
+     "host": "192.168.1.1",
+     "port": 3306,
+     "username": "admin",
+     "password": "secret123",
+     "database_name": "prod_db",
+     "description": "线上数据库"
+   }
+
+   响应：data_source_id (UUID7)
+
+2. 创建会话时引用数据源：
+   POST /api/sessions
+   {
+     "user_id": "user-uuid7",
+     "data_source_id": "data-source-uuid7"
+   }
+
+3. 列表数据源：
+   GET /api/data-sources?skip=0&limit=10
+
+4. 更新数据源：
+   PUT /api/data-sources/{id}
+   {
+     "name": "新名称",
+     "is_active": "false"
+   }
+
+5. 删除数据源：
+   DELETE /api/data-sources/{id}
+
+================================================================================
+                        关键改动说明
+================================================================================
+
+✓ ChatSession 不再直接存储数据库连接信息
+✓ 所有连接信息集中在 DataSource 模型中
+✓ 支持多个会话共享同一数据源
+✓ 数据源配置集中管理和维护
+
+创建会话请求变化：
+  旧：{"user_id": "...", "db_type": "...", "db_connection_string": "..."}
+  新：{"user_id": "...", "data_source_id": "..."}
+
+================================================================================
+                      数据库表结构
+================================================================================
+
+data_sources
+├── id (VARCHAR(36) PK)          - UUID7
+├── name (VARCHAR(255))          - 数据源名称
+├── db_type (VARCHAR(50))        - 数据库类型
+├── host (VARCHAR(255))          - 主机名/IP
+├── port (INTEGER)               - 端口号
+├── username (VARCHAR(255))      - 用户名
+├── password (VARCHAR(255))      - 密码
+├── database_name (VARCHAR(255)) - 数据库名称
+├── description (TEXT)           - 描述
+├── is_active (VARCHAR(10))      - 激活状态
+├── created_at (DATETIME)        - 创建时间
+└── updated_at (DATETIME)        - 更新时间
+
+chat_sessions (修改)
+├── id (VARCHAR(36) PK)          - UUID7
+├── user_id (VARCHAR(36) FK)     - 用户ID
+├── data_source_id (VARCHAR(36) FK) - 数据源ID
+├── status (VARCHAR(20))         - 会话状态
+├── log_filename (VARCHAR(255))  - 日志文件名
+├── log_filepath (VARCHAR(512))  - 日志路径
+├── created_at (DATETIME)
+└── updated_at (DATETIME)
+
+================================================================================
+                      新增 API 端点
+================================================================================
+
+数据源管理：
+  POST   /api/data-sources              - 创建数据源
+  GET    /api/data-sources              - 列表数据源（分页）
+  GET    /api/data-sources/{id}         - 获取数据源详情
+  PUT    /api/data-sources/{id}         - 更新数据源
+  DELETE /api/data-sources/{id}         - 删除数据源
+
+会话管理（端点不变，参数变更）：
+  POST   /api/sessions                  - 创建会话（需要 data_source_id）
+  GET    /api/sessions                  - 列表会话
+  GET    /api/sessions/{id}             - 获取会话
+  DELETE /api/sessions/{id}             - 删除会话
+
+聊天功能（端点不变）：
+  POST   /api/sessions/{id}/chat        - 发送消息
+  GET    /api/sessions/{id}/messages    - 获取消息
+
+================================================================================
+                        文件清单
+================================================================================
+
+新建文件：
+  ✓ app/models/data_source.py
+  ✓ app/crud/data_source.py
+  ✓ app/schemas/data_source.py
+  ✓ app/router/data_sources.py
+  ✓ DATA_SOURCE_MANAGEMENT.md
+  ✓ DATA_SOURCE_CHANGES.txt
+
+修改文件：
+  ✓ app/models/chat_session.py
+  ✓ app/models/__init__.py
+  ✓ app/schemas/session.py
+  ✓ app/crud/session.py
+  ✓ app/router/chat.py
+  ✓ main.py
+
+================================================================================
+
+所有改动已完成！请参考 DATA_SOURCE_MANAGEMENT.md 了解详细信息。

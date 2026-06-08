@@ -6,17 +6,15 @@ from pydantic import BaseModel
 
 class SessionCreate(BaseModel):
     user_id: str
-    db_type: str = "unknown"
-    db_connection_string: Optional[str] = None
+    data_source_id: str
 
 
 class SessionResponse(BaseModel):
     id: str
     user_id: str
-    db_type: str
+    data_source_id: str
     status: str
     log_filename: Optional[str] = None
-    db_connection_string: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
