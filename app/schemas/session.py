@@ -5,12 +5,14 @@ from pydantic import BaseModel
 
 
 class SessionCreate(BaseModel):
+    user_id: str
     db_type: str = "unknown"
     db_connection_string: Optional[str] = None
 
 
 class SessionResponse(BaseModel):
     id: str
+    user_id: str
     db_type: str
     status: str
     log_filename: Optional[str] = None

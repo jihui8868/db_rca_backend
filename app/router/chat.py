@@ -3,10 +3,10 @@ from sqlalchemy.orm import Session
 
 from app.agents import agent_service
 from app.core.database import get_db
-from app.crud import message as crud_message
+from app.crud import chat_message as crud_message
 from app.crud import session as crud_session
 from app.schemas.chat import ChatRequest, ChatResponse
-from app.schemas.message import MessageListResponse, MessageResponse
+from app.schemas.chat_message import ChatMessageListResponse
 from db_adapters import get_adapter
 
 router = APIRouter(tags=["chat"])
@@ -46,10 +46,10 @@ def send_message(session_id: str, body: ChatRequest, db: Session = Depends(get_d
     return ChatResponse(role="assistant", content=response_text, session_id=session_id)
 
 
-@router.get("/sessions/{session_id}/messages", response_model=MessageListResponse)
+@router.get("/sessions/{session_id}/messages", response_model=ChatMessageListResponse)
 def get_messages(session_id: str, db: Session = Depends(get_db)):
     session = crud_session.get_session(db, session_id)
     if not session:
         raise HTTPException(status_code=404, detail="Session not found")
     messages = crud_message.get_messages_by_session(db, session_id)
-    return MessageListResponse(messages=messages)
+    return ChatMessageListResponse(messages=messages)

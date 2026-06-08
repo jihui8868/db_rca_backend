@@ -8,6 +8,7 @@ from app.schemas.session import SessionCreate
 
 def create_session(db: Session, data: SessionCreate) -> AnalysisSession:
     session = AnalysisSession(
+        user_id=data.user_id,
         db_type=data.db_type,
         db_connection_string=data.db_connection_string,
     )

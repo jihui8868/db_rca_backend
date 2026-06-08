@@ -15,4 +15,6 @@ dependencies = [
     "pymysql>=1.1",
     "psycopg2-binary>=2.9",
     "httpx>=0.28",
+    "uuid6>=1.5.0",
+    "email-validator>=2.0.0",
 ]
