@@ -21,4 +21,4 @@ class User(Base):
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
     department = relationship("Department", back_populates="users")
-    analysis_sessions = relationship("AnalysisSession", back_populates="user")
+    chat_sessions = relationship("ChatSession", back_populates="user")

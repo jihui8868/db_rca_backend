@@ -11,9 +11,9 @@ class ChatMessage(Base):
     __tablename__ = "chat_messages"
 
     id = Column(String(36), primary_key=True, default=generate_uuid7)
-    session_id = Column(String(36), ForeignKey("analysis_sessions.id"), nullable=False)
+    session_id = Column(String(36), ForeignKey("chat_sessions.id"), nullable=False)
     role = Column(String(20), nullable=False)
     content = Column(Text, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    session = relationship("AnalysisSession", back_populates="messages")
+    session = relationship("ChatSession", back_populates="messages")

@@ -2,12 +2,12 @@ from typing import Optional
 
 from sqlalchemy.orm import Session
 
-from app.models.analysis_session import AnalysisSession
+from app.models.chat_session import ChatSession
 from app.schemas.session import SessionCreate
 
 
-def create_session(db: Session, data: SessionCreate) -> AnalysisSession:
-    session = AnalysisSession(
+def create_session(db: Session, data: SessionCreate) -> ChatSession:
+    session = ChatSession(
         user_id=data.user_id,
         db_type=data.db_type,
         db_connection_string=data.db_connection_string,
@@ -18,15 +18,15 @@ def create_session(db: Session, data: SessionCreate) -> AnalysisSession:
     return session
 
 
-def get_session(db: Session, session_id: str) -> Optional[AnalysisSession]:
-    return db.query(AnalysisSession).filter(AnalysisSession.id == session_id).first()
+def get_session(db: Session, session_id: str) -> Optional[ChatSession]:
+    return db.query(ChatSession).filter(ChatSession.id == session_id).first()
 
 
-def list_sessions(db: Session) -> list[AnalysisSession]:
-    return db.query(AnalysisSession).order_by(AnalysisSession.created_at.desc()).all()
+def list_sessions(db: Session) -> list[ChatSession]:
+    return db.query(ChatSession).order_by(ChatSession.created_at.desc()).all()
 
 
-def update_session_status(db: Session, session_id: str, status: str) -> Optional[AnalysisSession]:
+def update_session_status(db: Session, session_id: str, status: str) -> Optional[ChatSession]:
     session = get_session(db, session_id)
     if session:
         session.status = status
@@ -35,7 +35,7 @@ def update_session_status(db: Session, session_id: str, status: str) -> Optional
     return session
 
 
-def update_session_log(db: Session, session_id: str, filename: str, filepath: str) -> Optional[AnalysisSession]:
+def update_session_log(db: Session, session_id: str, filename: str, filepath: str) -> Optional[ChatSession]:
     session = get_session(db, session_id)
     if session:
         session.log_filename = filename

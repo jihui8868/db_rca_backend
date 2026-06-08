@@ -7,8 +7,8 @@ from app.core.database import Base
 from app.core.utils import generate_uuid7
 
 
-class AnalysisSession(Base):
-    __tablename__ = "analysis_sessions"
+class ChatSession(Base):
+    __tablename__ = "chat_sessions"
 
     id = Column(String(36), primary_key=True, default=generate_uuid7)
     user_id = Column(String(36), ForeignKey("users.id"), nullable=False)
@@ -20,6 +20,6 @@ class AnalysisSession(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
 
-    user = relationship("User", back_populates="analysis_sessions")
+    user = relationship("User", back_populates="chat_sessions")
     messages = relationship("ChatMessage", back_populates="session", cascade="all, delete-orphan")
     report = relationship("AnalysisReport", back_populates="session", uselist=False, cascade="all, delete-orphan")
